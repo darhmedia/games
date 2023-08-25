@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ball</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+    <script src="jquery-collision.js"></script>
+    <script>
+//37 left 39 right
+        $(function() {
+
+            $(window).on("keydown", function(key) {
+                cancelAnimationFrame(req2);
+                    cancelAnimationFrame(req3);
+                if(key.which==39) {
+                    playermove_left()
+
+                }
+                if(key.which==37) {
+                    playermove_right()
+                }
+            });
+            $(window).on("keyup", function(key) {
+
+                    cancelAnimationFrame(req2);
+                    cancelAnimationFrame(req3);
+
+            });
+
+            var speed = 3;
+
+            function playermove_left() {
+
+                req2 = requestAnimationFrame(playermove_left);
+
+                if($('.player').position().left < ($('.board').width()-50))
+                    $('.player').css('left',parseInt($('.player').css('left'))+1*speed);
+                else
+                    cancelAnimationFrame(req2);
+
+            }
+            function playermove_right() {
+
+                req3 = requestAnimationFrame(playermove_right);
+
+                if($('.player').position().left > 0)
+                    $('.player').css('left',parseInt($('.player').css('left'))-1*speed);
+                else
+                    cancelAnimationFrame(req3);
+
+            }
+            var blink;
+            innerWidth = $('.board').width();
+            innerHeight = $('.board').height();
+            x = $('.ball').position().left;
+            y = $('.ball').position().top;
+            x_ = x;
+            y_ = x;
+            const velocity = 3;
+            var startingAngle =angles();//Math.floor(Math.random() * 360) + 1;
+
+            const rad = 0;
+            let moveX = Math.cos(Math.PI / 180 * startingAngle) * velocity;
+            let moveY = Math.sin(Math.PI / 180 * startingAngle) * velocity;
+            let  req,req2,req3;
+            move();
+ 
+            var e = 0;
+            var p = 0;
+            function move() {
+                req = requestAnimationFrame(move);
+
+                if (x+10 > innerWidth - rad || x < rad) moveX = -moveX;
+                if (y > innerHeight - rad || y < rad  || player_collosion() || enemy_collosion()) moveY = -moveY
+
+                if(player_collosion()) {
+                    console.log('collosion')
+                    $('.player').animate({backgroundColor:'white'},200,function(){$(this).css('background-color','green')})
+                };
+
+                x += moveX;
+                y += moveY;
+
+                $('.ball').css('left',x);
+                $('.ball').css('top',y);
+
+                if(y >= innerHeight-10) {
+                    flash('ball')
+                    e++;
+                    $('#e').text(e);
+                    cancelAnimationFrame(req);
+                    cancelAnimationFrame(req2);
+                    cancelAnimationFrame(req3);
+                    cancelAnimationFrame(enemy_move);
+                    cancelAnimationFrame(req2);
+                    cancelAnimationFrame(req3);
+                    x = x_;
+                    y = y_;
+
+                    startingAngle = angles();
+                    moveX = Math.cos(Math.PI / 180 * startingAngle) * velocity;
+                    moveY = Math.sin(Math.PI / 180 * startingAngle) * velocity;
+                     
+                    setTimeout(() => {
+                        move();
+                        enemy_move()
+                    }, 1000);
+                }
+
+                if(y <= 3) {
+                    flash('ball')
+                    p++;
+                    $('#p').text(p);
+                    cancelAnimationFrame(req);
+                    cancelAnimationFrame(req2);
+                    cancelAnimationFrame(req3);
+                    cancelAnimationFrame(enemy_move);
+                    cancelAnimationFrame(req2);
+                    cancelAnimationFrame(req3);
+                    x = x_;
+                    y = y_;
+                     
+                     startingAngle = angles();
+                     moveX = Math.cos(Math.PI / 180 * startingAngle) * velocity;
+                     moveY = Math.sin(Math.PI / 180 * startingAngle) * velocity;
+
+                     
+                    setTimeout(() => {
+                        move();
+                        enemy_move()
+                    }, 1000);
+                }
+
+               // console.log(parseInt($('.player').css('left')), parseInt($('.ball').css('left')))
+            }
+
+            function angles() {
+
+                var angle = Math.floor(Math.random() * 360) + 1;
+                if(angle < 30 || (angle > 160 && angle < 190))
+                    return angles();
+                return angle;
+            }
+
+            function player_collosion() {
+                if(($('.player').position().top-10) <= $('.ball').position().top && ( parseInt($('.player').css('left'))+$('.player').width() >= parseInt($('.ball').css('left')) && parseInt($('.ball').css('left'))+$('.ball').width() >=parseInt($('.player').css('left'))))
+                    return true;
+                else
+                    return false;
+            }
+
+            function enemy_collosion() {
+                if(($('.enemy').position().top+10) >= $('.ball').position().top && ( parseInt($('.enemy').css('left'))+$('.player').width() >= parseInt($('.ball').css('left')) && parseInt($('.ball').css('left'))+$('.ball').width() >=parseInt($('.enemy').css('left'))))
+                    return true;
+                else
+                    return false;
+            }
+
+            function enemy_move() {
+                var enreq = requestAnimationFrame(enemy_move);
+                var ballleft = $('.ball').position().left;
+                var enemyleft = $('.enemy').position().left;
+                if($('.enemy').position().left < ($('.board').width()-50) && ballleft > enemyleft)
+                    $('.enemy').css('left',$('.enemy').position().left+1);
+
+                if($('.enemy').position().left > 0 && ballleft < enemyleft)
+                    $('.enemy').css('left',$('.enemy').position().left-1);
+
+            }
+            enemy_move()
+
+            function flash(c) {
+                //blink = setInterval(() => {
+                    $('.'+c).fadeOut(150).fadeIn(150).fadeOut(150).fadeIn(150);
+                //}, 1000);
+            }
+
+        })
+    </script>
+    <style>
+        .board {width:300px;height:600px;background-color:black;position:relative;border: 3px solid olive}
+        .show {position:relative;width:300px;background-color:black;padding:10px 0px;color:white;text-align:center;text-shadow: 0px 0px 3px yellow;border: 3px solid olive;border-bottom:none}
+        .enemy {top:10px;left:125px;width:50px;height:10px;position:absolute;background: linear-gradient(6deg, rgba(246,246,246,1) 0%, rgba(138,138,138,1) 100%, rgba(0,212,255,1) 100%);border-radius: 3px;}
+        .ball {top:45%;left:145px;position:absolute;background:linear-gradient(307deg, rgba(246,246,246,1) 0%, rgba(138,138,138,1) 100%, rgba(0,212,255,1) 100%);width:10px;height:10px;border-radius: 10px;}
+        .player {bottom:10px;left:125px;position:absolute;background: linear-gradient(6deg, rgba(246,246,246,1) 0%, rgba(138,138,138,1) 100%, rgba(0,212,255,1) 100%);width:50px;height:10px;border-radius: 3px;}
+        .rotate {animation: rotation 2s infinite linear;}
+        @keyframes rotation {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(359deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="show">[enemy: <span id="e">0</span>] VS [player: <span id="p">0</span>] </div>
+    <div class="board">
+        <div class="enemy"></div>
+        <div class="ball rotate"></div>
+        <div class="player"></div>
+    </div>
+</body>
+</html>
